@@ -27,7 +27,6 @@ This doc covers the state of the project, what's been decided, what's outstandin
 | **Voyage AI voyage-3-large** for embeddings | Anthropic's recommended embedding partner. Quality is excellent for this dataset size. Free tier (200M tokens) covers KAS's traffic for many months. |
 | **Each question is stateless — no chat history passed back** | Earlier prototype had Claude seeing prior turns, which caused it to contradict itself on unrelated follow-up questions. Stateless is correct for a search assistant. |
 | **Max 3 citation cards shown, with "See more" toggle** | Keeps focus on the interviews, not the chatbot. Feedback from KAS leadership. |
-| **YouTube links go to video start, no timestamps** | Originally planned to deep-link to the moment the topic was discussed, but required scraping ~820 YouTube transcripts, which YouTube's bot protection blocked. Retrieving against descriptions instead is simpler and works reliably. If timestamps become a priority later, a residential proxy service like WebShare (~$5/mo) would unblock it. |
 
 ## Known limitations
 
