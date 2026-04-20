@@ -38,15 +38,7 @@ This doc covers the state of the project, what's been decided, what's outstandin
 
 ## Your action items
 
-### 1. Get the secrets
-Separately from this repo, you'll receive:
-- `ANTHROPIC_API_KEY` — the Claude API key
-- `VOYAGE_API_KEY` — the Voyage AI key
-- `YOUTUBE_API_KEY` — only needed if you re-run the indexer with a new CSV
-
-Store them in a password manager (1Password, etc.). Never commit them to git.
-
-### 2. Decide on hosting
+### 1. Decide on hosting
 The backend needs a Python host. Options from simplest to most robust:
 
 - **Render** (free tier, sleeps after 15 min idle — first request after sleep takes ~30 s; $7/mo tier is always-on) — easiest setup
@@ -56,7 +48,7 @@ The backend needs a Python host. Options from simplest to most robust:
 
 Render is fine for launch. Upgrade the plan if the 30-s cold start becomes a complaint.
 
-### 3. Deploy the backend
+### 2. Deploy the backend
 See **Deployment** in `README.md`. The start command is:
 ```
 uvicorn main:app --host 0.0.0.0 --port $PORT
@@ -72,19 +64,19 @@ curl -X POST https://YOUR-BACKEND-URL/api/chat \
 ```
 Should return a JSON object with `answer` and `citations`.
 
-### 4. Tighten CORS
+### 3. Tighten CORS
 Edit `main.py` line ~146, change `allow_origins=["*"]` to:
 ```python
 allow_origins=["https://www.koreanamericanstory.org"]  # or wherever KAS actually lives
 ```
 Redeploy.
 
-### 5. Embed on Squarespace
+### 4. Embed on Squarespace
 See **Embedding the widget on the KAS Squarespace site** in `README.md`. Short version: Settings → Advanced → Code Injection → Footer, paste two lines with your backend URL, save.
 
 Squarespace **Business plan or higher is required** for Code Injection — confirm KAS has this.
 
-### 6. (Optional) Add rate limiting and analytics before going public
+### 5. (Optional) Add rate limiting and analytics before going public
 - **Rate limiting:** `slowapi` is a 1-file add-on for FastAPI. ~10 lines of code.
 - **Analytics:** either pipe chat questions to a simple logging table, or fire a Google Analytics event from the widget on each submission.
 
@@ -109,4 +101,4 @@ Scales roughly linearly with traffic. 20K queries/month → ~$60. Worth checking
 
 ## If something's unclear
 
-The repo has inline comments where they matter. The `README.md` covers setup and deployment in more detail. For anything not covered, reach out to [your contact] — happy to answer questions during the transition.
+The repo has inline comments where they matter. The `README.md` covers setup and deployment in more detail. For anything not covered, reach out to Sophieliew1@gmail.com.
