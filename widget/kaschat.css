@@ -1,0 +1,347 @@
+/* KAS Archive Assistant — embeddable chat widget */
+
+:root {
+  --kaschat-dark: #25596e;
+  --kaschat-light: #6395a8;
+  --kaschat-white: #ffffff;
+  --kaschat-bg: #f7fafc;
+  --kaschat-border: #d8e3e9;
+  --kaschat-text: #1f2d35;
+  --kaschat-muted: #5a6d77;
+  --kaschat-shadow: 0 12px 40px rgba(37, 89, 110, 0.22);
+}
+
+.kaschat-launcher,
+.kaschat-panel,
+.kaschat-panel * {
+  font-family: "Gira Sans", "Helvetica Neue", Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* ---- Floating launcher ---- */
+.kaschat-launcher {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--kaschat-dark);
+  color: var(--kaschat-white);
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--kaschat-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2147483000;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.kaschat-launcher:hover {
+  background: var(--kaschat-light);
+  transform: scale(1.05);
+}
+.kaschat-launcher svg { width: 28px; height: 28px; }
+.kaschat-launcher[aria-expanded="true"] { display: none; }
+
+/* ---- Panel ---- */
+.kaschat-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  height: min(640px, calc(100vh - 48px));
+  background: var(--kaschat-white);
+  border-radius: 16px;
+  box-shadow: var(--kaschat-shadow);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 2147483000;
+  animation: kaschat-in 0.2s ease-out;
+}
+.kaschat-panel.open { display: flex; }
+
+@keyframes kaschat-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.kaschat-header {
+  background: var(--kaschat-dark);
+  color: var(--kaschat-white);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.kaschat-header-text { line-height: 1.2; }
+.kaschat-header-title { font-weight: 600; font-size: 16px; }
+.kaschat-header-sub { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+.kaschat-close {
+  background: transparent;
+  border: none;
+  color: var(--kaschat-white);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  border-radius: 6px;
+}
+.kaschat-close:hover { background: rgba(255,255,255,0.15); }
+.kaschat-close svg { width: 20px; height: 20px; }
+
+.kaschat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  background: var(--kaschat-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.kaschat-msg {
+  max-width: 85%;
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+.kaschat-msg.user {
+  align-self: flex-end;
+  background: var(--kaschat-dark);
+  color: var(--kaschat-white);
+  border-bottom-right-radius: 4px;
+}
+.kaschat-msg.assistant {
+  align-self: flex-start;
+  background: var(--kaschat-white);
+  color: var(--kaschat-text);
+  border: 1px solid var(--kaschat-border);
+  border-bottom-left-radius: 4px;
+}
+.kaschat-msg cite-mark {
+  color: var(--kaschat-dark);
+  font-weight: 600;
+  font-style: normal;
+}
+
+.kaschat-citations {
+  align-self: flex-start;
+  width: 92%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: -6px;
+}
+.kaschat-citation {
+  background: var(--kaschat-white);
+  border: 1px solid var(--kaschat-border);
+  border-radius: 10px;
+  padding: 8px;
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--kaschat-text);
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.kaschat-citation:hover {
+  border-color: var(--kaschat-light);
+  background: #fafcfd;
+  transform: translateX(2px);
+}
+.kaschat-citation.hidden { display: none; }
+
+.kaschat-citation-thumb {
+  width: 112px;
+  height: 63px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: #e8eef1;
+}
+.kaschat-citation-thumb-fallback {
+  width: 112px;
+  height: 63px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--kaschat-light), var(--kaschat-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.kaschat-citation-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.kaschat-citation-index {
+  color: var(--kaschat-dark);
+  font-weight: 700;
+  margin-right: 5px;
+}
+.kaschat-citation-title {
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--kaschat-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kaschat-citation-meta {
+  font-size: 11.5px;
+  color: var(--kaschat-muted);
+  margin-top: 3px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kaschat-citation-timestamp {
+  color: var(--kaschat-dark);
+  font-weight: 600;
+  margin-left: 4px;
+}
+.kaschat-citation.no-url { opacity: 0.7; cursor: default; }
+.kaschat-citation.no-url:hover { border-color: var(--kaschat-border); background: var(--kaschat-white); transform: none; }
+
+.kaschat-more {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid var(--kaschat-border);
+  color: var(--kaschat-dark);
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  font-family: inherit;
+}
+.kaschat-more:hover {
+  background: var(--kaschat-white);
+  border-color: var(--kaschat-light);
+}
+
+.kaschat-suggestions {
+  align-self: flex-start;
+  max-width: 92%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: -4px;
+}
+.kaschat-suggestion {
+  background: var(--kaschat-white);
+  border: 1px solid var(--kaschat-light);
+  color: var(--kaschat-dark);
+  padding: 7px 12px;
+  border-radius: 16px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.kaschat-suggestion:hover {
+  background: var(--kaschat-light);
+  color: var(--kaschat-white);
+  transform: translateY(-1px);
+}
+
+.kaschat-typing {
+  align-self: flex-start;
+  display: flex;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--kaschat-white);
+  border: 1px solid var(--kaschat-border);
+  border-radius: 14px;
+  border-bottom-left-radius: 4px;
+}
+.kaschat-typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--kaschat-light);
+  animation: kaschat-bounce 1.2s infinite;
+}
+.kaschat-typing span:nth-child(2) { animation-delay: 0.15s; }
+.kaschat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes kaschat-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+.kaschat-form {
+  padding: 12px;
+  background: var(--kaschat-white);
+  border-top: 1px solid var(--kaschat-border);
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.kaschat-input {
+  flex: 1;
+  border: 1px solid var(--kaschat-border);
+  border-radius: 22px;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  color: var(--kaschat-text);
+  background: var(--kaschat-bg);
+}
+.kaschat-input:focus { border-color: var(--kaschat-light); background: var(--kaschat-white); }
+.kaschat-send {
+  background: var(--kaschat-dark);
+  color: var(--kaschat-white);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+.kaschat-send:hover:not(:disabled) { background: var(--kaschat-light); }
+.kaschat-send:disabled { background: var(--kaschat-border); cursor: not-allowed; }
+.kaschat-send svg { width: 18px; height: 18px; }
+
+.kaschat-error {
+  align-self: center;
+  font-size: 12px;
+  color: #a13232;
+  background: #fbe9e9;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+@media (max-width: 480px) {
+  .kaschat-panel {
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    height: calc(100vh - 16px);
+    border-radius: 12px;
+  }
+}
