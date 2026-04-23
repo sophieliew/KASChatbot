@@ -71,23 +71,52 @@ class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
 
 
+VERSION_TAG_RE = re.compile(r"\s*\((full|edited|short|trailer)\)\s*", re.I)
+
+
+def base_title(title: str) -> str:
+    return VERSION_TAG_RE.sub(" ", title).strip().lower()
+
+
+def is_edited(title: str) -> bool:
+    return "(edited)" in title.lower()
+
+
+# The CSV has separate rows for the (Full) and (Edited) cuts of many interviews.
+# Their embeddings land close together, so both versions used to surface as two
+# near-identical citations. Collapse them to one card per interview and prefer
+# the Edited cut for visitors.
+PREFERRED_RID_BY_BASE: dict[str, int] = {}
+for r in records:
+    bt = base_title(r["title"])
+    if bt not in PREFERRED_RID_BY_BASE or is_edited(r["title"]):
+        PREFERRED_RID_BY_BASE[bt] = r["id"]
+
+CHUNK_IDX_BY_RID: dict[int, int] = {c["record_id"]: i for i, c in enumerate(chunks)}
+
+
 def retrieve(query: str, k: int = TOP_K):
-    """Chunk-level retrieval, deduplicated to best chunk per interview."""
+    """Chunk-level retrieval, deduped to one card per interview (Edited preferred)."""
     result = voyage.embed([query], model="voyage-3-large", input_type="query")
     q = np.array(result.embeddings[0], dtype=np.float32)
     q /= np.linalg.norm(q)
     scores = norm_embeddings @ q
     top_idx = np.argsort(-scores)[:OVER_K]
 
-    best_by_record: dict[int, tuple[float, int]] = {}
+    best_score_by_base: dict[str, float] = {}
     for idx in top_idx:
         idx = int(idx)
-        rid = chunks[idx]["record_id"]
-        if rid not in best_by_record:
-            best_by_record[rid] = (float(scores[idx]), idx)
+        bt = base_title(records[chunks[idx]["record_id"]]["title"])
+        if bt not in best_score_by_base:
+            best_score_by_base[bt] = float(scores[idx])
 
-    ranked = sorted(best_by_record.items(), key=lambda kv: -kv[1][0])[:k]
-    return [(records[rid], chunks[cidx]) for rid, (_, cidx) in ranked]
+    ranked = sorted(best_score_by_base.items(), key=lambda kv: -kv[1])[:k]
+    out = []
+    for bt, _ in ranked:
+        rid = PREFERRED_RID_BY_BASE[bt]
+        cidx = CHUNK_IDX_BY_RID[rid]
+        out.append((records[rid], chunks[cidx]))
+    return out
 
 
 def build_context(hits):
